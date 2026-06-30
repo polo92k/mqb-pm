@@ -2100,17 +2100,12 @@ public class DashboardFragment extends CarFragment {
 
                     // all data that can be put on the clock without further modification:
                     case "exlap-Nav_Heading":
+                    case "exlap-batteryVoltage":
                     case "exlap-Nav_Altitude":
                     case "exlap-yawRate":
                     case "exlap-EcoHMI_Score.AvgShort":
                     case "exlap-EcoHMI_Score.AvgTrip":
                         // no scaling
-                        break;
-
-                    case "exlap-batteryVoltage":
-                        //clockValue = clockValue * 10f; // 1.2 → 12.0
-                        clockValue = clockValue; // 129.8 -> 12.9
-                        clock.setUnit(getString(R.string.unit_volt));
                         break;
                     case "exlap-brakePressure":
                         clockValue = clockValue * 10f;

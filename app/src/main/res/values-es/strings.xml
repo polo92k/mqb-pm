@@ -2,7 +2,7 @@
 <resources>
     <string name="activity_credits_title">Créditos</string>
     <string name="activity_main_title">Información Sport</string>
-    <string name="activity_settings_title">Ajustes de Performance Monitor</string>
+    <string name="activity_settings_title">Ajustes de MIB2 Performance Monitor</string>
     <string name="activity_stopwatch_title">Cronómetro</string>
     <string name="app_car_service_name">MIB2 Información Sport</string>
     <string name="app_name">MIB2 Performance Monitor</string>
