@@ -137,7 +137,6 @@ public class DashboardFragment extends CarFragment {
     private static final String FORMAT_MILES = "%.1f miles";
     private static final String FORMAT_NO_DECIMALS = "%.0f";
     private static final String FORMAT_PERCENT = "%.1f";
-    private static final String FORMAT_PERCENT_SIGN = "%.0f%%";
     private static final String FORMAT_DEGREESPEC = "%.1f°/s";
     private static final String FORMAT_TEMPERATURE = "%.1f°";
     private static final String FORMAT_TEMPERATURE0 = "-,-°";
@@ -150,7 +149,7 @@ public class DashboardFragment extends CarFragment {
     private String sourceLocation;
     private String selectedFont;
     private boolean selectedPressureUnits;
-    private int updateSpeed = 1;
+    private int updateSpeed = 2000;
 
     private float[] MaxspeedLeft;
     private float[] MaxspeedCenter;
@@ -559,7 +558,7 @@ public class DashboardFragment extends CarFragment {
         if (accurateOn) {
             updateSpeed = 1;
         } else {
-            updateSpeed = 1;
+            updateSpeed = 2000;
         }
 
         if (!proximityOn) {
@@ -701,10 +700,10 @@ public class DashboardFragment extends CarFragment {
             temperatureUnit = getString(celsiusTempUnit ? R.string.unit_c : R.string.unit_f);
         }
 
-        boolean readedPowerUnits = sharedPreferences.getBoolean("selectPowerUnit", false);  //true = kw, false = ps
+        boolean readedPowerUnits = sharedPreferences.getBoolean("selectPowerUnit", true);  //true = kw, false = ps
         if (powerUnits == null || readedPowerUnits != powerUnits) {
             powerUnits = readedPowerUnits;
-            powerFactor = powerUnits ? 1 : 1.34102f;
+            powerFactor = powerUnits ? 1 : 1.35962f;
         }
 //
 
@@ -1014,12 +1013,12 @@ public class DashboardFragment extends CarFragment {
             if (tmp != null)
                 sb.append(tmp);
             sb.append(' ');
-        //    tmp = result.getPostalCode();  //PostalCode
-        //    if (tmp != null)
-        //        sb.append("("+tmp+")");
+            //    tmp = result.getPostalCode();  //PostalCode
+            //    if (tmp != null)
+            //        sb.append("("+tmp+")");
             tmp = result.getUrl();  //URL -> Altitude
             if (tmp != null)
-            sb.append("("+tmp+")");
+                sb.append("("+tmp+")");
 
             googleGeocodeLocationStr = sb.toString();
         }
@@ -1039,26 +1038,23 @@ public class DashboardFragment extends CarFragment {
             mGeocodingService = null;
         }
     };
+
     private void startTorque() {
         Intent intent = new Intent();
         intent.setClassName("org.prowl.torque", "org.prowl.torque.remote.TorqueService");
+        getContext().startService(intent);
+        Log.d(TAG, "Torque start");
 
-        try {
-            // Try to bind to Torque service
-            boolean successfulBind = getContext().bindService(
-                    intent, torqueConnection, android.content.Context.BIND_AUTO_CREATE);
-
-            torqueBind = successfulBind;
-            if (successfulBind) {
-                Log.d("HU", "Connected to Torque service!");
-            } else {
-                Log.w("HU", "Torque not running, skipping connection");
-            }
-        } catch (Exception e) {
+        boolean successfulBind = getContext().bindService(intent, torqueConnection, 0);
+        if (successfulBind) {
+            torqueBind = true;
+            Log.d("HU", "Connected to torque service!");
+        } else {
             torqueBind = false;
-            Log.e("HU", "Error connecting to Torque service", e);
+            Log.e("HU", "Unable to connect to Torque plugin service");
         }
     }
+
 
     private void stopTorque() {
         Intent sendIntent = new Intent();
@@ -1083,7 +1079,7 @@ public class DashboardFragment extends CarFragment {
                     mHandler.postDelayed(updateTimerRunnable, 1);
             }
 
-        }, 0, 75);//Update display 0,25 second
+        }, 0, 250);//Update display 0,25 second
     }
 
     @Override
@@ -1329,61 +1325,61 @@ public class DashboardFragment extends CarFragment {
             mConstraintClockCenter.setVisibility(View.VISIBLE);
             mConstraintClockRight.setVisibility(View.VISIBLE);
 
-        //update each of the elements:
-        updateElement(mElement1Query, mValueElement1, mIconElement1);
-        updateElement(mElement2Query, mValueElement2, mIconElement2);
-        updateElement(mElement3Query, mValueElement3, mIconElement3);
-        updateElement(mElement4Query, mValueElement4, mIconElement4);
+            //update each of the elements:
+            updateElement(mElement1Query, mValueElement1, mIconElement1);
+            updateElement(mElement2Query, mValueElement2, mIconElement2);
+            updateElement(mElement3Query, mValueElement3, mIconElement3);
+            updateElement(mElement4Query, mValueElement4, mIconElement4);
 
-        //update each of the clocks and the min/max/ray elements that go with it
-        // query, dial, visray, textmax, textmin, clockmax, clockmin)
+            //update each of the clocks and the min/max/ray elements that go with it
+            // query, dial, visray, textmax, textmin, clockmax, clockmin)
 
-        updateClock(mClockLQuery, mClockLeft, mRayLeft, mTextMaxLeft, mClockMaxLeft, mGraphLeft, mSpeedSeriesLeft, graphLeftLastXValue, mGraphValueLeft, MaxspeedLeft);
-        updateClock(mClockCQuery, mClockCenter, mRayCenter, mTextMaxCenter, mClockMaxCenter, mGraphCenter, mSpeedSeriesCenter, graphCenterLastXValue, mGraphValueCenter, MaxspeedCenter);
-        updateClock(mClockRQuery, mClockRight, mRayRight, mTextMaxRight,  mClockMaxRight,  mGraphRight, mSpeedSeriesRight, graphRightLastXValue, mGraphValueRight, MaxspeedRight);
+            updateClock(mClockLQuery, mClockLeft, mRayLeft, mTextMaxLeft, mClockMaxLeft, mGraphLeft, mSpeedSeriesLeft, graphLeftLastXValue, mGraphValueLeft, MaxspeedLeft);
+            updateClock(mClockCQuery, mClockCenter, mRayCenter, mTextMaxCenter, mClockMaxCenter, mGraphCenter, mSpeedSeriesCenter, graphCenterLastXValue, mGraphValueCenter, MaxspeedCenter);
+            updateClock(mClockRQuery, mClockRight, mRayRight, mTextMaxRight,  mClockMaxRight,  mGraphRight, mSpeedSeriesRight, graphRightLastXValue, mGraphValueRight, MaxspeedRight);
 
 
-        // get ambient color, change color of some elements to match the ambient color.
-        // this can't be done during setup, because then the ambientColor is probably not received yet.
-        if (ambientOn) {
-            String ambientColor =
-                    mLastMeasurements.containsKey("Car_ambienceLightColour.ColourSRGB")?
-                            (String) mLastMeasurements.get("Car_ambienceLightColour.ColourSRGB") : null;
-            //ambientColor = "#FF0000"; // for testing purposes
-            if (ambientColor != null && !ambientColor.equals("")) {
-                int parsedColor = Color.parseColor(ambientColor);
+            // get ambient color, change color of some elements to match the ambient color.
+            // this can't be done during setup, because then the ambientColor is probably not received yet.
+            if (ambientOn) {
+                String ambientColor =
+                        mLastMeasurements.containsKey("Car_ambienceLightColour.ColourSRGB")?
+                                (String) mLastMeasurements.get("Car_ambienceLightColour.ColourSRGB") : null;
+                //ambientColor = "#FF0000"; // for testing purposes
+                if (ambientColor != null && !ambientColor.equals("")) {
+                    int parsedColor = Color.parseColor(ambientColor);
 
-                if ((parsedColor != mClockLeft.getIndicatorColor()) || ((parsedColor != mRayLeft.getLowSpeedColor()))){
-                    if (raysOn) {
-                        mRayLeft.setLowSpeedColor(parsedColor);
-                        mRayCenter.setLowSpeedColor(parsedColor);
-                        mRayRight.setLowSpeedColor(parsedColor);
-                        mRayLeft.setMediumSpeedColor(parsedColor);
-                        mRayCenter.setMediumSpeedColor(parsedColor);
-                        mRayRight.setMediumSpeedColor(parsedColor);
-                    } else {
-                        mClockLeft.setIndicatorColor(parsedColor);
-                        mClockCenter.setIndicatorColor(parsedColor);
-                        mClockRight.setIndicatorColor(parsedColor);
-                        mClockLeft.setIndicatorLightColor(parsedColor);
-                        mClockCenter.setIndicatorLightColor(parsedColor);
-                        mClockRight.setIndicatorLightColor(parsedColor);
-                    }
+                    if ((parsedColor != mClockLeft.getIndicatorColor()) || ((parsedColor != mRayLeft.getLowSpeedColor()))){
+                        if (raysOn) {
+                            mRayLeft.setLowSpeedColor(parsedColor);
+                            mRayCenter.setLowSpeedColor(parsedColor);
+                            mRayRight.setLowSpeedColor(parsedColor);
+                            mRayLeft.setMediumSpeedColor(parsedColor);
+                            mRayCenter.setMediumSpeedColor(parsedColor);
+                            mRayRight.setMediumSpeedColor(parsedColor);
+                        } else {
+                            mClockLeft.setIndicatorColor(parsedColor);
+                            mClockCenter.setIndicatorColor(parsedColor);
+                            mClockRight.setIndicatorColor(parsedColor);
+                            mClockLeft.setIndicatorLightColor(parsedColor);
+                            mClockCenter.setIndicatorLightColor(parsedColor);
+                            mClockRight.setIndicatorLightColor(parsedColor);
+                        }
 
-                    switch (selectedBackground) {
-                        case "background_incar_dots":
-                        case "background_incar_skoda2":
-                            int resId = getResources().getIdentifier(selectedBackground, "drawable", getContext().getPackageName());
-                            Drawable wallpaperImage = ContextCompat.getDrawable(getContext(),resId);
+                        switch (selectedBackground) {
+                            case "background_incar_dots":
+                            case "background_incar_skoda2":
+                                int resId = getResources().getIdentifier(selectedBackground, "drawable", getContext().getPackageName());
+                                Drawable wallpaperImage = ContextCompat.getDrawable(getContext(),resId);
 
-                            wallpaperImage.setColorFilter(new LightingColorFilter(parsedColor, Color.parseColor("#010101")));
+                                wallpaperImage.setColorFilter(new LightingColorFilter(parsedColor, Color.parseColor("#010101")));
 
-                            rootView.setBackground(wallpaperImage);
-                            break;
+                                rootView.setBackground(wallpaperImage);
+                                break;
+                        }
                     }
                 }
             }
-        }
         } else {
             mConstraintElementLeft.setVisibility(View.VISIBLE);
             mConstraintElementCenter.setVisibility(View.VISIBLE);
@@ -1473,7 +1469,7 @@ public class DashboardFragment extends CarFragment {
                 icon = "empty";
                 break;
             case "currentTorque":
-                label.setText(R.string.unit_kgm);
+                label.setText(R.string.unit_nm);
                 icon = "empty";
                 break;
             case "gearboxOilTemperature":
@@ -1790,7 +1786,7 @@ public class DashboardFragment extends CarFragment {
         Log.d(TAG, "minmax speed: " + torqueMin + " " + torqueMax);
 
         pressureUnit = "bar";
-        pressureMax = 2;
+        pressureMax = 5;
         pressureMin = -1;
 
         //setupClock(icon, "ic_none", "", clock, false, "", 0, 100, "float");
@@ -1828,15 +1824,12 @@ public class DashboardFragment extends CarFragment {
                 break;
             case "exlap-engineSpeed":
             case "torque-rpm_0x0c":
-                setupClock(icon, "ic_none", getString(R.string.unit_rpm), clock, true, getString(R.string.unit_rpm1000), 0, 7000, "float", "integer");
+                setupClock(icon, "ic_none", getString(R.string.unit_rpm), clock, true, getString(R.string.unit_rpm1000), 0, 9, "float", "integer");
                 clock.setTicks();
                 clock.setTickTextFormat(0);
                 break;
             case "torque-voltage_0xff1238":
             case "exlap-batteryVoltage":
-                setupClock(icon, "ic_battery", "", clock, false, getString(R.string.unit_volt),
-                        0, 17, "float", "integer");
-                break;
             case "torque-voltagemodule_0x42":
                 setupClock(icon, "ic_battery", "", clock, false, getString(R.string.unit_volt), 0, 17, "float", "integer");
                 break;
@@ -1858,11 +1851,11 @@ public class DashboardFragment extends CarFragment {
                 setupClock(icon, "ic_gearbox", "", clock, false, "°", 0, 200, "float", "integer");
                 break;
             case "torque-turboboost_0xff1202":
-                setupClock(icon, "ic_turbo", "", clock, true, torqueUnit, -1, 2, "float", "float");
+                setupClock(icon, "ic_turbo", "", clock, true, torqueUnit, torqueMin, torqueMax, "float", "float");
                 break;
             case "exlap-absChargingAirPressure":
             case "exlap-relChargingAirPressure":
-                setupClock(icon, "ic_turbo", "", clock, true, pressureUnit, pressureMin, pressureMax, "float", "float");
+                setupClock(icon, "ic_turbo", "", clock, true, pressureUnit, pressureMin, pressureMax, "float", "integer");
                 break;
             case "exlap-lateralAcceleration":
                 setupClock(icon, "ic_lateral", "", clock, false, getString(R.string.unit_g), -3, 3, "float", "float");
@@ -1890,10 +1883,10 @@ public class DashboardFragment extends CarFragment {
                 setupClock(icon, "ic_brakepedalposition", "", clock, false, "%", 0, 100, "integer", "integer");
                 break;
             case "exlap-currentTorque":
-                setupClock(icon, "ic_none", "", clock, false, getString(R.string.unit_kgm), 0, 30, "integer", "integer");
+                setupClock(icon, "ic_none", "", clock, false, getString(R.string.unit_nm), 0, 500, "integer", "integer");
                 break;
             case "exlap-currentOutputPower":
-                setupClock(icon, "ic_none", "", clock, false, getString(R.string.unit_hp) , 0, 170, "integer", "integer");
+                setupClock(icon, "ic_none", "", clock, false, getString(R.string.unit_kw) , 0, 500, "integer", "integer");
                 break;
             case "exlap-currentConsumptionPrimary":
             case "exlap-cycleConsumptionPrimary":
@@ -1918,7 +1911,7 @@ public class DashboardFragment extends CarFragment {
                 setupClock(icon, "ic_none", getString(R.string.label_load), clock, false, torqueUnit, 0, 100, "float", "integer");
                 break;
             case "torque-timing_advance_0x0e":
-                setupClock(icon, "ic_timing", "", clock, false, torqueUnit, -30, 30, "float", "integer");
+                setupClock(icon, "ic_timing", "", clock, false, torqueUnit, torqueMin, torqueMax, "float", "integer");
                 break;
             case "torque-intake_air_temperature_0x0f":
                 setupClock(icon, "ic_none", getString(R.string.label_iat), clock, false, torqueUnit, 0, 100, "float", "integer");
@@ -1977,7 +1970,7 @@ public class DashboardFragment extends CarFragment {
                 setupClock(icon, "ic_cact", "", clock, false, torqueUnit, 0, 100, "float", "integer");
                 break;
             case "torque-pressurecontrol_0x70":
-                setupClock(icon, "ic_turbo", "", clock, false, pressureUnit, pressureMin * 30, pressureMax * 30, "float", "float");
+                setupClock(icon, "ic_turbo", "", clock, false, pressureUnit, pressureMin * 30, pressureMax * 30, "float", "integer");
                 break;
             case "torque-o2sensor1equivalenceratio_0x34":
                 setupClock(icon, "ic_none", "O2 sensor", clock, false, torqueUnit, 0, 3, "float", "float");
@@ -2044,7 +2037,7 @@ public class DashboardFragment extends CarFragment {
     //update clock with data
     private void updateClock(String query, Speedometer clock, RaySpeedometer visray, TextView
             textmax, Speedometer clockmax, GraphView graph, LineGraphSeries<DataPoint> series, Double graphLastXValue,
-             TextView graphValue, float[] MaxSpeed) {
+                             TextView graphValue, float[] MaxSpeed) {
         if (query != null && stagingDone) {
 
             float speedFactor = 1f;
@@ -2097,7 +2090,6 @@ public class DashboardFragment extends CarFragment {
                     case "none":    // none cannot happen currently
                         //don't do anything
                         break;
-
                     // all data that can be put on the clock without further modification:
                     case "exlap-Nav_Heading":
                     case "exlap-batteryVoltage":
@@ -2105,19 +2097,8 @@ public class DashboardFragment extends CarFragment {
                     case "exlap-yawRate":
                     case "exlap-EcoHMI_Score.AvgShort":
                     case "exlap-EcoHMI_Score.AvgTrip":
-                        // no scaling
-                        break;
                     case "exlap-brakePressure":
-                        clockValue = clockValue * 10f;
-                        // IMPORTANT: do NOT divide these; keep raw values
-                        // battery voltage should be ~12.x V; brake should map 0..1 ➜ 0..100% later
-                        break;
-
                     case "exlap-currentTorque":
-                        // keep previous scaling if you really need it here
-                        clockValue = clockValue / 9.80665f;
-                        break;
-
                     case "exlap-lateralAcceleration":
 
                         // all data that can be put on the clock without further modification:
@@ -2133,7 +2114,7 @@ public class DashboardFragment extends CarFragment {
                     //rpm data, needs to be divided by 1000 before displayed on the clock
                     case "exlap-engineSpeed":
                     case "torque-rpm_0x0c":
-                        clockValue = clockValue ;
+                        clockValue = clockValue / 1000;
                         break;
                     // temperatures
                     case "exlap-oilTemperature":
@@ -2145,7 +2126,7 @@ public class DashboardFragment extends CarFragment {
                     // pressures
                     case "exlap-absChargingAirPressure":
                     case "exlap-relChargingAirPressure":
-                        clockValue = clockValue - pressureFactor;
+                        clockValue = clockValue * pressureFactor;
                         break;
                     // specific case for wheel angle, since it needs to be turned around
                     case "exlap-wheelAngle":
@@ -2157,16 +2138,10 @@ public class DashboardFragment extends CarFragment {
                         break;
                     // percentages
                     case "exlap-acceleratorPosition":
-                        // raw 0..1  ➜ show 0..100 %
-                        clockValue = clockValue * 200f;
-                        break;
-
                     case "exlap-tankLevelPrimary":
                     case "exlap-tankLevelSecondary":
-                        // fraction of tank ➜ liters
                         clockValue = clockValue * fueltanksize;
                         break;
-    
                     // specific consumption data with specific consumption units
                     // todo: maybe it's better to remove setting the unit from updateclock, but do it on setupclock
                     case "exlap-currentConsumptionPrimary":
@@ -2341,8 +2316,8 @@ public class DashboardFragment extends CarFragment {
             // Max Value update
             if (maxOn && clockValue > MaxSpeed[dashboardNum]) {
                 textmax.setText(String.format(Locale.US, FORMAT_DECIMALS, clockValue));
-            // Save max Value
-            MaxSpeed[dashboardNum] = clockValue;
+                // Save max Value
+                MaxSpeed[dashboardNum] = clockValue;
             }
         }
 
@@ -2408,7 +2383,7 @@ public class DashboardFragment extends CarFragment {
         if (mProximity != null && mProximity && proximityOn) {
             ObjectAnimator animation;
             if (dashboardNum<4) animation = ObjectAnimator.ofFloat(mDashboard_gaudes, "y", 90);
-                else animation = ObjectAnimator.ofFloat(mDashboard_consumption, "y", 90);
+            else animation = ObjectAnimator.ofFloat(mDashboard_consumption, "y", 90);
 
             animation.setDuration(200);
             animation.start();
@@ -2427,7 +2402,7 @@ public class DashboardFragment extends CarFragment {
         } else if (!proximityOn) {
             ObjectAnimator animation;
             if (dashboardNum<4) animation = ObjectAnimator.ofFloat(mDashboard_gaudes, "y", 90);
-                else animation = ObjectAnimator.ofFloat(mDashboard_consumption, "y", 90);
+            else animation = ObjectAnimator.ofFloat(mDashboard_consumption, "y", 90);
             animation.setDuration(200);
             animation.start();
             mTitleClockLeft.setText("");
@@ -2454,7 +2429,7 @@ public class DashboardFragment extends CarFragment {
             mTitleConsumptionCenter.setVisibility(View.INVISIBLE);
             ObjectAnimator animation;
             if (dashboardNum<4) animation = ObjectAnimator.ofFloat(mDashboard_gaudes, "y", 45);
-                else animation = ObjectAnimator.ofFloat(mDashboard_consumption, "y", 45);
+            else animation = ObjectAnimator.ofFloat(mDashboard_consumption, "y", 45);
             animation.setDuration(200);
             animation.start();
         }
@@ -2492,10 +2467,10 @@ public class DashboardFragment extends CarFragment {
             }
 
             if (leftTitle == "") {
-                    mTitleIcon2.setVisibility(View.INVISIBLE);
-                } else {
-                    mTitleIcon2.setVisibility(View.VISIBLE);
-                }
+                mTitleIcon2.setVisibility(View.INVISIBLE);
+            } else {
+                mTitleIcon2.setVisibility(View.VISIBLE);
+            }
         }
 
         // Display temperature in right side of Title  bar
@@ -2716,7 +2691,6 @@ public class DashboardFragment extends CarFragment {
                 case "batteryVoltage":
                     Float mBatteryVoltage = (Float) mLastMeasurements.get("batteryVoltage");
                     if (mBatteryVoltage != null) {
-                        mBatteryVoltage *= 10f;
                         value.setText(String.format(Locale.US, FORMAT_VOLT, mBatteryVoltage));
                     }
                     break;
@@ -2762,12 +2736,12 @@ public class DashboardFragment extends CarFragment {
                 case "currentOutputPower":
                     Float mCurrentPowerValue = (Float) mLastMeasurements.get(queryElement);
                     if (mCurrentPowerValue != null) {
-                        if (!powerUnits) {
-                            // HP
-                            mCurrentPowerValue *= powerFactor;
-                        }
+                        // if (!powerUnits) {
+                        //     // HP
+                        //     mCurrentPowerValue *= powerFactor;
+                        // }
                         value.setText(String.format(Locale.US, FORMAT_DECIMALS, mCurrentPowerValue));
-                        label.setText(powerUnits?getString(R.string.unit_kw):getString(R.string.unit_hp));
+                        //label.setText(powerUnits?getString(R.string.unit_kw):getString(R.string.unit_hp));
                     }
                     break;
                 case "currentTorque":
@@ -2832,15 +2806,14 @@ public class DashboardFragment extends CarFragment {
                 case "acceleratorPosition":
                     Float mAcceleratorPosition = (Float) mLastMeasurements.get("acceleratorPosition");
                     if (mAcceleratorPosition != null) {
-                        Float mAccelPosPercent = mAcceleratorPosition * 200f;
+                        Float mAccelPosPercent = mAcceleratorPosition * 100;
                         value.setText(String.format(Locale.US, FORMAT_DECIMALS, mAccelPosPercent));
                     }
                     break;
                 case "brakePressure":
                     Float mBrakePressure = (Float) mLastMeasurements.get("brakePressure");
                     if (mBrakePressure != null) {
-                        float percent = mBrakePressure * 10f; // x10
-                        value.setText(String.format(Locale.US, FORMAT_DECIMALS, percent));
+                        value.setText(String.format(Locale.US, FORMAT_DECIMALS, mBrakePressure));
                     }
                     break;
                 case "wheelAngle":
@@ -2920,8 +2893,7 @@ public class DashboardFragment extends CarFragment {
                 case "tankLevelSecondary":
                     Float tankLevel = (Float) mLastMeasurements.get(queryElement);
                     if (tankLevel != null) {
-                        tankLevel = tankLevel * 100;
-                        value.setText(String.format(Locale.US, FORMAT_PERCENT_SIGN, tankLevel));
+                        value.setText(String.format(Locale.US, FORMAT_PERCENT, tankLevel));
                     }
                     break;
             }
