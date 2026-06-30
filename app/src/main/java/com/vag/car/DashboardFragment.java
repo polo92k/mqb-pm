@@ -1,4 +1,4 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -2108,7 +2108,8 @@ public class DashboardFragment extends CarFragment {
                         break;
 
                     case "exlap-batteryVoltage":
-                        clockValue = clockValue * 10f; // 1.2 → 12.0
+                        //clockValue = clockValue * 10f; // 1.2 → 12.0
+                        clockValue = clockValue; // 129.8 -> 12.9
                         clock.setUnit(getString(R.string.unit_volt));
                         break;
                     case "exlap-brakePressure":

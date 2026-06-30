@@ -1,10 +1,9 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 
 public class TemperaturePreference extends EditTextPreference implements Preference.OnPreferenceChangeListener {

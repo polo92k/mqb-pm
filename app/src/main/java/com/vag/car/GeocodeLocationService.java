@@ -1,4 +1,4 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import android.app.Service;
 import android.content.Context;
@@ -8,7 +8,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 

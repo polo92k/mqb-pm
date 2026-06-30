@@ -1,4 +1,4 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import android.app.UiModeManager;
 import android.content.BroadcastReceiver;

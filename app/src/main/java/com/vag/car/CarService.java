@@ -1,4 +1,4 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import com.google.android.apps.auto.sdk.CarActivity;
 import com.google.android.apps.auto.sdk.CarActivityService;

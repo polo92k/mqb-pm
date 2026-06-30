@@ -7,8 +7,8 @@
     <string name="activity_settings_title">Performance Monitor Settings</string>
     <string name="activity_stopwatch_title">Stopwatch</string>
 
-    <string name="app_car_service_name">Performance Monitor</string>
-    <string name="app_name">Performance Monitor</string>
+    <string name="app_car_service_name">MIB2 Performance Monitor</string>
+    <string name="app_name">MIB2 Performance Monitor</string>
 
     <string name="credits_author">This application was made by:</string>
     <string name="credits_basedon">Based on the SDK and demo App by:</string>

@@ -1,4 +1,4 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;

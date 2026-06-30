@@ -1,4 +1,4 @@
-package com.mqbcoding.stats;
+package com.vag.car;
 
 import android.content.ComponentName;
 import android.content.Context;

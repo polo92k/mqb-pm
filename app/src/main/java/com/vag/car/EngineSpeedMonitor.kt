@@ -1,17 +1,13 @@
-package com.mqbcoding.stats
+package com.vag.car
 
-import android.app.Notification
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Handler
 import android.preference.PreferenceManager
-import android.support.v4.app.NotificationCompat
 import android.util.Log
 
 import com.github.martoreto.aauto.vex.CarStatsClient
-import com.google.android.apps.auto.sdk.notification.CarNotificationExtender
 
 import java.util.Date
 
